@@ -8,6 +8,8 @@ class CustomUser(AbstractBaseUser):
     is_staff = models.BooleanField("is_staff", default=True)
     is_active = models.BooleanField("is_active", default=True)
     is_superuser = models.BooleanField("is_superuser", default=False)
+    signed_up_with_google = models.BooleanField(default=False)
+    google_id = models.CharField(max_length=255, default='defult_value')
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()

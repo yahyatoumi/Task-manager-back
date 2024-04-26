@@ -6,6 +6,11 @@ class Room(models.Model):
     name = models.CharField(max_length=50, blank=False)
     members = models.ManyToManyField(CustomUser, related_name='rooms')
     
+    def add_member(self, to_add):
+        if not self.members.filter(pk=to_add.pk).exists():
+            self.members.add(to_add)
+            self.save()
+    
     def __str__(self):
         return f'{self.id} {self.name}'
 
