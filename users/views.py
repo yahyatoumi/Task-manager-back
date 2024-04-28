@@ -12,6 +12,19 @@ from django.core.exceptions import ObjectDoesNotExist
 import requests
 from rest_framework.utils import json
 from .helpers import generate_random_username
+import environ
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+# reading .env file
+environ.Env.read_env()
+
+# False if not in os.environ
+DEBUG = env('DEBUG')
+GOOGLE_CLIENT_ID = env('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = env('GOOGLE_CLIENT_SECRET')
+
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser])
@@ -70,12 +83,35 @@ def login(request):
     
     return Response(response_data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def auth(request):
+    client_id = GOOGLE_CLIENT_ID
+    redirect_uri = 'http://localhost:3000/login/googleAuth'
+    scope = 'openid profile email'
+    response_type = 'code'
+    
+    google_auth_url = f'https://accounts.google.com/o/oauth2/auth?client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}&response_type={response_type}'
+    return Response(google_auth_url, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def google_auth(request):
-    if "access_token" not in request.data:
-        return Response({"error": "google access_token is required"})
-    access_token = request.data['access_token']
+    if "code" not in request.data:
+        return Response({"error": "google code is required"}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    # return Response(request.data, status=200)
+    code = request.data["code"]
+    request_body = {
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "redirect_uri": 'http://localhost:3000/login/googleAuth',
+                "code": code,
+                "grant_type": 'authorization_code'
+    }
+    r = requests.post("https://oauth2.googleapis.com/token", json=request_body)
+    if r.status_code != 200:
+        return Response(r, status=r.status_code)
+    data = json.loads(r.text)
+    access_token = data['access_token']
     payload = {'access_token': access_token}
     r = requests.get("https://www.googleapis.com/oauth2/v1/userinfo", 
                      headers={

@@ -15,11 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, re_path, include
-from .views import signup, login, google_auth
+from .views import signup, login, google_auth, auth
 
 usersurlpatterns = [
     path('signup', signup),
     path('login', login),
     path('google/auth', google_auth),
+    path('auth', auth),
     re_path(r'^auth/', include('drf_social_oauth2.urls', namespace='drf'))
 ]

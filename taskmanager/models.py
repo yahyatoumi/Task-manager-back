@@ -5,6 +5,7 @@ class Room(models.Model):
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, blank=False)
     members = models.ManyToManyField(CustomUser, related_name='rooms')
+    color = models.CharField(max_length=255, default="#007bff")
     
     def add_member(self, to_add):
         if not self.members.filter(pk=to_add.pk).exists():

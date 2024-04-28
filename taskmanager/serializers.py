@@ -4,7 +4,7 @@ from rest_framework import serializers
 class RoomSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = Room
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'color']
         
         
     def validate(self, attrs):
