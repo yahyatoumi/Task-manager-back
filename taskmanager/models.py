@@ -14,6 +14,22 @@ class Room(models.Model):
     
     def __str__(self):
         return f'{self.id} {self.name}'
+    
+class FavoritesRoomsList(models.Model):
+    user            = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    favorite_rooms  = models.ManyToManyField(Room, blank=True, related_name="favorite_rooms")
+    
+    def make_favorite(self, room):
+        if room not in self.favorite_rooms.all():
+            self.favorite_rooms.add(room)
+            
+    def make_not_favorite(self, room):
+        if room in self.favorite_rooms.all():
+            self.favorite_rooms.remove(room)
+    
+    def is_favorite(self, room):
+        return room in self.favorite_rooms.all()
+    
 
 class Project(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room')

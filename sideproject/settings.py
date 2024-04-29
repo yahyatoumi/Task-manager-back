@@ -84,10 +84,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'taskmanager',
-    
-    'oauth2_provider',
-    'social_django',
-    'drf_social_oauth2',
     "corsheaders",
 
 ]
@@ -119,22 +115,10 @@ REST_FRAMEWORK = {
 }
 
 AUTHENTICATION_BACKENDS = (
-    # Others auth providers (e.g. Facebook, OpenId, etc)
-    # Google  OAuth2
-    'social_core.backends.google.GoogleOAuth2',
-    # drf-social-oauth2
     'drf_social_oauth2.backends.DjangoOAuth2',
     # Django
     'django.contrib.auth.backends.ModelBackend',
 )
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-]
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '978059877654-1f2q26aetlb4ogle520dmhjuuttau6d7.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
 
 
 ROOT_URLCONF = 'sideproject.urls'
