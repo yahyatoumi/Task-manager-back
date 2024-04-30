@@ -26,7 +26,7 @@ def get_rooms(request):
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser])
+@parser_classes([MultiPartParser, JSONParser])
 def create_room(request):
     serializer = RoomSerializer(data=request.data)
     if serializer.is_valid():
@@ -39,8 +39,9 @@ def create_room(request):
 @api_view(['PUT'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser])
+@parser_classes([MultiPartParser, JSONParser])
 def set_room_to_favorite(request):
+    print("in set_room_to_favorite")
     if "room_id" not in request.data:
         return Response({"error": "room_id field is required"}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     try:
@@ -62,8 +63,9 @@ def set_room_to_favorite(request):
 @api_view(['PUT'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser])
+@parser_classes([MultiPartParser, JSONParser])
 def set_room_to_not_favorite(request):
+    print("in set_room_to_not_favorite")
     if "room_id" not in request.data:
         return Response({"error": "room_id field is required"}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     try:

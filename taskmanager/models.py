@@ -23,6 +23,7 @@ class FavoritesRoomsList(models.Model):
         if room not in self.favorite_rooms.all():
             self.favorite_rooms.add(room)
             
+            
     def make_not_favorite(self, room):
         if room in self.favorite_rooms.all():
             self.favorite_rooms.remove(room)
