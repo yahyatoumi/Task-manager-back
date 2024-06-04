@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics
-from .models import CustomUser, Room, FavoritesRoomsList
+from .models import CustomUser, Room, FavoritesRoomsList, Project
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.decorators import parser_classes
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
@@ -12,7 +12,7 @@ import requests
 from rest_framework.utils import json
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .serializers import RoomSerializer
+from .serializers import RoomSerializer, CreatRoomSerializer, CustomUserSerializer, ProjectSerializer
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
@@ -23,16 +23,33 @@ def get_rooms(request):
     serializer = RoomSerializer(rooms, many=True, context={'request': request})
     return Response(serializer.data)
 
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def room(request, id):
+    try:
+        room = Room.objects.get(pk=id)
+    except Room.DoesNotExist:
+        return Response({"error": "Room not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = RoomSerializer(room, context={'request': request})
+    response_data = serializer.data
+    response_data["members"] = CustomUserSerializer(room.members.all(), many=True).data
+    projects = Project.objects.filter(room=room)
+    response_data["projects"] = ProjectSerializer(projects, many=True).data
+    return Response(response_data, status=status.HTTP_200_OK)
+    
+    
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, JSONParser])
 def create_room(request):
-    serializer = RoomSerializer(data=request.data)
+    serializer = CreatRoomSerializer(data=request.data)
     if serializer.is_valid():
         room = serializer.save(owner=request.user)
         room.add_member(request.user)
-        return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
+        return Response(RoomSerializer(room, context={'request': request}).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

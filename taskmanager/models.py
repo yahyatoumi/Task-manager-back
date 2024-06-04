@@ -6,6 +6,7 @@ class Room(models.Model):
     name = models.CharField(max_length=50, blank=False)
     members = models.ManyToManyField(CustomUser, related_name='rooms')
     color = models.CharField(max_length=255, default="#007bff")
+    description = models.TextField(blank=True)
     
     def add_member(self, to_add):
         if not self.members.filter(pk=to_add.pk).exists():
