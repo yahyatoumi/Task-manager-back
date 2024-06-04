@@ -41,8 +41,6 @@ class Project(models.Model):
     date_created = models.DateField(auto_now_add=True)
     
     def save(self, *args, **kwargs):
-        
-            
         # Call the parent class's save method to save the instance
         super().save(*args, **kwargs)
         Section.objects.create(project=self, name='To Do')

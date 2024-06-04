@@ -101,3 +101,20 @@ def set_room_to_not_favorite(request):
     serializer = RoomSerializer(room, context={'request': request})
     return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, JSONParser])
+def create_project(request):
+    if ("room_id" not in request.data or "project_title" not in request.data):
+        return Response("room_id and project_title required", status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    room_id = request.data["room"]
+    try:
+        room = Room.objects.get(pk=room_id)
+    except:
+        return Response("Object not found", status=status.HTTP_404_NOT_FOUND)
+    
+    if (request.user in room.members.all()):
+        return Response("Object not found hhhh", status=status.HTTP_404_NOT_FOUND)
+
