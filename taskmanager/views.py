@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics
-from .models import CustomUser, Room, FavoritesRoomsList, Project
+from .models import CustomUser, Room, FavoritesRoomsList, Project, Section
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.decorators import parser_classes
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
@@ -12,7 +12,7 @@ import requests
 from rest_framework.utils import json
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .serializers import RoomSerializer, CreatRoomSerializer, CustomUserSerializer, ProjectSerializer
+from .serializers import RoomSerializer, CustomUserSerializer, ProjectSerializer, SectionSerializer
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
@@ -45,11 +45,10 @@ def room(request, id):
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, JSONParser])
 def create_room(request):
-    serializer = CreatRoomSerializer(data=request.data)
+    serializer = RoomSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
-        room = serializer.save(owner=request.user)
-        room.add_member(request.user)
-        return Response(RoomSerializer(room, context={'request': request}).data, status=status.HTTP_201_CREATED)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -109,12 +108,50 @@ def set_room_to_not_favorite(request):
 def create_project(request):
     if ("room_id" not in request.data or "project_title" not in request.data):
         return Response("room_id and project_title required", status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-    room_id = request.data["room"]
+    room_id = request.data["room_id"]
     try:
         room = Room.objects.get(pk=room_id)
     except:
         return Response("Object not found", status=status.HTTP_404_NOT_FOUND)
     
-    if (request.user in room.members.all()):
+    if (request.user not in room.members.all()):
         return Response("Object not found hhhh", status=status.HTTP_404_NOT_FOUND)
+    
+    color = "#333333"
+    if ("color" in request.data):
+        color = request.data["color"]
+    
+    project_data = {
+        'name': request.data["project_title"],
+        'room_id': request.data["room_id"],
+        'color': color
+    }
+    print("DDDDD", project_data)
+    
+    serializer = ProjectSerializer(data=project_data, context={'request': request})
+    if (serializer.is_valid()):
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, JSONParser])
+def get_project(request, id):
+    try:
+        project = Project.objects.get(pk=id)
+    except Project.DoesNotExist:
+        return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    members = project.members.all()
+    if (request.user not in members):
+        return Response({"error": "Project not found 2"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = ProjectSerializer(project, context={'request': request})
+    sections = Section.objects.filter(project=project).prefetch_related('tasks')
+    print("SSSSS", sections)
+    response_data = serializer.data
+    response_data["sections"] = SectionSerializer(sections, many=True).data
+    return Response(response_data, status=status.HTTP_200_OK)
 

@@ -39,19 +39,21 @@ class Project(models.Model):
     members = models.ManyToManyField(CustomUser, related_name='projects')
     name = models.CharField(max_length=50, blank=False)
     date_created = models.DateField(auto_now_add=True)
+    color = models.CharField(max_length=50, blank=True)
     
-    def save(self, *args, **kwargs):
-        # Call the parent class's save method to save the instance
-        super().save(*args, **kwargs)
-        Section.objects.create(project=self, name='To Do')
-        Section.objects.create(project=self, name='In Progress')
-        Section.objects.create(project=self, name='Done')
+    def add_member(self, member):
+        self.members.add(member)
+        self.save()
+        
+    def remove_member(self, member):
+        self.members.remove(member)
+        self.save()
     
     def __str__(self):
         return f'{self.id} {self.name}'
     
 class Section(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='sections')
     name = models.CharField(max_length=50)
     
     def __str__(self):
@@ -60,7 +62,7 @@ class Section(models.Model):
     
 class Task(models.Model):
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="created_by")
-    in_section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='section')
+    in_section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='tasks')
     name = models.CharField(max_length=50)
     date_created = models.DateField(auto_now_add=True)
     date_updated = models.DateField(auto_now=True)

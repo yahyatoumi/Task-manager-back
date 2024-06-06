@@ -1,19 +1,14 @@
-from .models import Room, CustomUser, FavoritesRoomsList, Project
+from .models import Room, CustomUser, FavoritesRoomsList, Project, Section, Task
 from rest_framework import serializers
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'username']
-        
-class CreatRoomSerializer(serializers.ModelSerializer):
-    class Meta(object):
-        model = Room
-        fields = ['id', 'name', 'description']
-    
+        write_only_fields = ["password"]
 
 class RoomSerializer(serializers.ModelSerializer):
-    owner = CustomUserSerializer()
+    owner = CustomUserSerializer(read_only=True)
     is_favorite = serializers.SerializerMethodField()
         
     class Meta(object):
@@ -27,10 +22,9 @@ class RoomSerializer(serializers.ModelSerializer):
         return favorite_rooms.is_favorite(room)
     
     def create(self, validated_data):
-        print("CREATTTTTTT")
-        owner_data = validated_data.pop('owner')
-        owner = CustomUserSerializer.create(CustomUserSerializer(), validated_data=owner_data)
+        owner = self.context['request'].user  # Get the authenticated user from the context
         room = Room.objects.create(owner=owner, **validated_data)
+        room.add_member(owner)
         return room
             
     def validate(self, attrs):
@@ -39,7 +33,38 @@ class RoomSerializer(serializers.ModelSerializer):
 
         return attrs
     
+class TaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = "__all__"
+    
+class SectionSerializer(serializers.ModelSerializer):
+    tasks = TaskSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Section
+        fields = ['id', 'name', 'project', 'tasks']
+
+    
 class ProjectSerializer(serializers.ModelSerializer):
+    room_id = serializers.IntegerField(write_only=True)
+    created_by = CustomUserSerializer()
+    members = CustomUserSerializer(many=True)
+    
     class Meta(object):
         model = Project
-        fields = "__all__"
+        fields = ['id', 'name', 'room', 'room_id', 'created_by', 'members', 'date_created', 'color']
+        read_only_fields = ['created_by', "room", 'members', 'color']
+        
+    def create(self, validated_data):
+        print("CCCCR", validated_data)
+        room = Room.objects.get(pk=validated_data["room_id"])
+        created_by = self.context['request'].user
+        validated_data.pop("room_id")
+        project = Project.objects.create(room=room, created_by=created_by, **validated_data)
+        project.add_member(created_by)
+        # Create default sections
+        Section.objects.create(project=project, name='To Do')
+        Section.objects.create(project=project, name='In Progress')
+        Section.objects.create(project=project, name='Done')
+        return project
