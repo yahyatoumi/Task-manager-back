@@ -34,9 +34,9 @@ class FavoritesRoomsList(models.Model):
     
 
 class Project(models.Model):
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room')
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='projects')
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    members = models.ManyToManyField(CustomUser, related_name='projects')
+    members = models.ManyToManyField(CustomUser, related_name='members')
     name = models.CharField(max_length=50, blank=False)
     date_created = models.DateField(auto_now_add=True)
     color = models.CharField(max_length=50, blank=True)

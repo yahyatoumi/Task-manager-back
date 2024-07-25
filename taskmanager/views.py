@@ -12,7 +12,7 @@ import requests
 from rest_framework.utils import json
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .serializers import RoomSerializer, CustomUserSerializer, ProjectSerializer, SectionSerializer
+from .serializers import RoomSerializer, CustomUserSerializer, ProjectSerializer, SectionSerializer, TaskCreateSerializer
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
@@ -126,7 +126,7 @@ def create_project(request):
         'room_id': request.data["room_id"],
         'color': color
     }
-    print("DDDDD", project_data)
+    print("codadaaa", project_data)
     
     serializer = ProjectSerializer(data=project_data, context={'request': request})
     if (serializer.is_valid()):
@@ -154,4 +154,35 @@ def get_project(request, id):
     response_data = serializer.data
     response_data["sections"] = SectionSerializer(sections, many=True).data
     return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, JSONParser])
+def get_projects_in_workspace(request, id):
+    try:
+        workspace = Room.objects.get(pk=id)
+    except Room.DoesNotExist or request.user not in Room.members.all():
+        return Response({"error": "Workspace not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    projects = Project.objects.filter(room=workspace)
+
+    serializer = ProjectSerializer(projects, many=True, context={'request': request})
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, JSONParser])
+def create_task(request):
+    print("dddata", request.data)
+    serializer = TaskCreateSerializer(data=request.data, context={'request': request})
+    if (serializer.is_valid()):
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=400)
+    
 
