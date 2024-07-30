@@ -76,7 +76,8 @@ class TaskCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Task
-        fields = ["id", "name", "section_id"]
+        fields = ["id", "name", "section_id", "created_by", "date_created", "date_updated"]
+        read_only_fields = ('id', 'created_by', 'date_created', 'date_updated')
         
     def create(self, validated_data):
         section = Section.objects.get(pk=validated_data["section_id"])
