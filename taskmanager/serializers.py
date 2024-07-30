@@ -41,22 +41,34 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = "__all__"
     
 class SectionSerializer(serializers.ModelSerializer):
-    tasks = TaskSerializer(many=True, read_only=True)
+    tasks = serializers.SerializerMethodField()
     
     class Meta:
         model = Section
         fields = ['id', 'name', 'project', 'tasks']
+        
+    def get_tasks(self, obj):
+        print("ordereeeeddd")
+        tasks = obj.tasks.order_by('order_in_section')
+        return TaskSerializer(tasks, many=True).data
 
     
 class ProjectSerializer(serializers.ModelSerializer):
     room_id = serializers.IntegerField(write_only=True)
     created_by = CustomUserSerializer(read_only=True)
     members = CustomUserSerializer(many=True, read_only=True)
+    # sections = SectionSerializer(many=True, read_only=True)
+    sections = serializers.SerializerMethodField()
     
     class Meta(object):
         model = Project
-        fields = ['id', 'name', 'room', 'room_id', 'created_by', 'members', 'date_created', 'color']
-        read_only_fields = ['created_by', "room", 'members']
+        fields = ['id', 'name', 'room', 'room_id', 'created_by', 'members', 'date_created', 'color', "sections"]
+        read_only_fields = ['created_by', "room", 'members', 'sections']
+        
+    def get_sections(self, obj):
+        print("ordereeeeddd sections")
+        sections = obj.sections.order_by('order_in_Project')
+        return SectionSerializer(sections, many=True).data
         
     def create(self, validated_data):
         print("CCCCR", validated_data)
@@ -66,9 +78,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         project = Project.objects.create(room=room, created_by=created_by, **validated_data)
         project.add_member(created_by)
         # Create default sections
-        Section.objects.create(project=project, name='To Do')
-        Section.objects.create(project=project, name='In Progress')
-        Section.objects.create(project=project, name='Done')
+        Section.objects.create(project=project, name='To Do', order_in_Project=0)
+        Section.objects.create(project=project, name='In Progress', order_in_Project=1)
+        Section.objects.create(project=project, name='Done', order_in_Project=2)
         return project
     
 class TaskCreateSerializer(serializers.ModelSerializer):
@@ -86,8 +98,9 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         print("created_by", created_by)
         print("project", project)
         print("members", project.members)
+        print("sec len", len(section.tasks.all()))
         if created_by not in project.members.all():
             raise serializers.ValidationError("You are not a member of the project.")
         validated_data.pop("section_id")
-        task = Task.objects.create(in_section=section, created_by=created_by, **validated_data)
+        task = Task.objects.create(in_section=section, created_by=created_by, order_in_section=len(section.tasks.all()), **validated_data)
         return task

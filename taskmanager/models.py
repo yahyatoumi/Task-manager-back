@@ -55,6 +55,7 @@ class Project(models.Model):
 class Section(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='sections')
     name = models.CharField(max_length=50)
+    order_in_Project = models.IntegerField()
     
     def __str__(self):
         return f'{self.id} {self.name}'
@@ -66,6 +67,7 @@ class Task(models.Model):
     name = models.CharField(max_length=50)
     date_created = models.DateField(auto_now_add=True)
     date_updated = models.DateField(auto_now=True)
+    order_in_section = models.IntegerField()
     
     def __str__(self):
         return f'{self.id} {self.name}'

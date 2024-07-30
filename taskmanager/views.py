@@ -149,10 +149,10 @@ def get_project(request, id):
         return Response({"error": "Project not found 2"}, status=status.HTTP_404_NOT_FOUND)
 
     serializer = ProjectSerializer(project, context={'request': request})
-    sections = Section.objects.filter(project=project).prefetch_related('tasks')
-    print("SSSSS", sections)
+    # sections = Section.objects.filter(project=project).prefetch_related('tasks')
+    # print("SSSSS", sections)
     response_data = serializer.data
-    response_data["sections"] = SectionSerializer(sections, many=True).data
+    # response_data["sections"] = SectionSerializer(sections, many=True).data
     return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
