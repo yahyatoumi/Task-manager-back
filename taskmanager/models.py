@@ -48,6 +48,9 @@ class Project(models.Model):
     def remove_member(self, member):
         self.members.remove(member)
         self.save()
+        
+    def reorder_sections(self, data):
+        print("ddd", data)
     
     def __str__(self):
         return f'{self.id} {self.name}'
@@ -56,6 +59,10 @@ class Section(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='sections')
     name = models.CharField(max_length=50)
     order_in_Project = models.IntegerField()
+    
+    def update_order(self, new_order):
+        self.order_in_Project = new_order
+        self.save()
     
     def __str__(self):
         return f'{self.id} {self.name}'

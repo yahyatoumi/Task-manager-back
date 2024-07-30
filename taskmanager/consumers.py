@@ -4,7 +4,7 @@ from channels.generic.websocket import WebsocketConsumer
 from .models import Project
 from django.contrib.auth.models import AnonymousUser
 from .serializers import SectionSerializer, CustomUserSerializer
-from .models import Section, CustomUser
+from .models import Section, CustomUser, Project
 
 class TextRoomConsumer(WebsocketConsumer):
     def connect(self):
@@ -33,6 +33,7 @@ class TextRoomConsumer(WebsocketConsumer):
                     "send": CustomUserSerializer(user).data,
                     "sections": SectionSerializer(sections, many=True).data
                 }))
+    
     def disconnect(self, close_code):
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
@@ -44,6 +45,29 @@ class TextRoomConsumer(WebsocketConsumer):
         # Receive message from WebSocket
         text_data_json = json.loads(text_data)
         print("TEXT DATA JSON", text_data_json)
+        project_id = self.scope['url_route']['kwargs']['board_id']
+        new_sections_order = text_data_json["sectionsIds"]
+        print("TEXT DATA JSON", new_sections_order, len(new_sections_order), project_id)
+        project = Project.objects.get(pk=self.scope['url_route']['kwargs']['board_id'])
+        sections = project.sections.all()
+        for section in sections:
+            section_id_str = str(section.id)
+            try:
+                section_new_order = new_sections_order.index(section_id_str)
+                section.update_order(section_new_order)
+                print("seccc", section, section_new_order)
+            except ValueError:
+                pass
+        
+
+    def broadcast_order(self, section_ids):
+        self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'section_update',
+                'message': {'sectionsIds': section_ids}
+            }
+        )
 
     def chat_message(self, event):
         # Receive message from room group
