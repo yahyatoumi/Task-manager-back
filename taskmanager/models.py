@@ -36,7 +36,7 @@ class FavoritesRoomsList(models.Model):
 class Project(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='projects')
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    members = models.ManyToManyField(CustomUser, related_name='members')
+    members = models.ManyToManyField(CustomUser, related_name='projects')
     name = models.CharField(max_length=50, blank=False)
     date_created = models.DateField(auto_now_add=True)
     color = models.CharField(max_length=50, blank=True)
@@ -75,6 +75,15 @@ class Task(models.Model):
     date_created = models.DateField(auto_now_add=True)
     date_updated = models.DateField(auto_now=True)
     order_in_section = models.IntegerField()
+    
+    def change_section(self, section_id):
+        section = Section.objects.get(pk=section_id)
+        self.in_section = section
+        self.save()
+    
+    def change_order(self, new_order):
+        self.order_in_section = new_order
+        self.save()
     
     def __str__(self):
         return f'{self.id} {self.name}'

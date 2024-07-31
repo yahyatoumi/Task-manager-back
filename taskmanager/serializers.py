@@ -45,7 +45,9 @@ class SectionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Section
-        fields = ['id', 'name', 'project', 'tasks']
+        fields = ['id', 'name', 'project', 'tasks', "order_in_Project"]
+        read_only_fields = ["order_in_Project"]
+
         
     def get_tasks(self, obj):
         print("ordereeeeddd")
