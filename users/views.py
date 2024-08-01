@@ -17,6 +17,8 @@ env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
 )
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 # reading .env file
 environ.Env.read_env()
 
@@ -166,3 +168,12 @@ def google_auth(request):
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    user = request.user
+    rooms = user.rooms.all()
+    serializer = RoomSerializer(rooms, many=True, context={'request': request})
+    return Response(serializer.data)
