@@ -58,7 +58,7 @@ class Project(models.Model):
 class Section(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='sections')
     name = models.CharField(max_length=50)
-    order_in_Project = models.IntegerField()
+    order_in_Project = models.IntegerField(default=1)
     
     def update_order(self, new_order):
         self.order_in_Project = new_order
