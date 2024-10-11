@@ -23,9 +23,14 @@ from rest_framework_simplejwt.views import (
 from users.urls import usersurlpatterns
 from taskmanager.urls import taskmanagerurlpatterns
 from django_channels_jwt.urls import urlpatterns as ws_uuid_path
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ] + usersurlpatterns + taskmanagerurlpatterns + ws_uuid_path
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
