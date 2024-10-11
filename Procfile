@@ -1,1 +1,2 @@
-web: daphne -p $PORT sideproject.asgi:application
+web: daphne -u /tmp/daphne.sock sideproject.asgi:application
+

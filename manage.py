@@ -16,6 +16,7 @@ environ.Env.read_env()
 DEBUG = env('DEBUG')
 GOOGLE_CLIENT_ID = env('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = env('GOOGLE_CLIENT_SECRET')
+print("IDDDD", GOOGLE_CLIENT_ID)
 
 # Raises django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
 # SECRET_KEY = env('SECRET_KEY')
