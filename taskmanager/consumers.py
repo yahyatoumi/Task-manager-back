@@ -5,10 +5,10 @@ from django.contrib.auth.models import AnonymousUser
 from .serializers import SectionSerializer, CustomUserSerializer, ProjectSerializer
 from .models import Section, CustomUser, Task
 from channels.db import database_sync_to_async       
+from .models import Project
 
 
 class TextRoomConsumer(AsyncWebsocketConsumer):
-    from .models import Project
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["board_id"]
         self.room_group_name = f"board_{self.room_name}"
