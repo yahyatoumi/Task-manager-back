@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
 
 import os
 from django.core.asgi import get_asgi_application
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sideproject.settings')
 django_asgi_app = get_asgi_application()
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import re_path
@@ -20,7 +21,6 @@ def get_websocket_urlpatterns():
         re_path(r'^ws/board/(?P<board_id>\d+)/$', TextRoomConsumer.as_asgi()),
     ]
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sideproject.settings')
 
 
 application = ProtocolTypeRouter({
