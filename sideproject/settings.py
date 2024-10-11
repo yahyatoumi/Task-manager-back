@@ -66,7 +66,7 @@ SECRET_KEY = 'django-insecure-05(y@^3hz)_bgn7)_rc5rdp$(hv8-y&e4qgm-6z#*$94r0n@x6
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-ALLOWED_HOSTS = ["https://my-task-managerxx-2c24dc748b63.herokuapp.com"]
+ALLOWED_HOSTS = ["https://my-task-managerxx-2c24dc748b63.herokuapp.com", ".herokuapp.com"]
 
 AUTH_USER_MODEL = "users.CustomUser"
 
